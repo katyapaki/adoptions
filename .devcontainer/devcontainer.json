@@ -1,0 +1,39 @@
+{
+  "name": "Java 21 + PostgreSQLML",
+  "image": "mcr.microsoft.com/devcontainers/java:1-21-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [8080, 5433, 8000],
+  "portsAttributes": {
+    "8080": {
+      "label": "Spring Boot app",
+      "onAutoForward": "openPreview"
+    },
+    "5433": {
+      "label": "PostgresML"
+    },
+    "8000": {
+      "label": "PostgresML HTTP"
+    }
+  },
+  "postCreateCommand": "chmod +x mvnw db/*.sh .devcontainer/*.sh && .devcontainer/post-create.sh",
+  "postStartCommand": ".devcontainer/post-start.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-spring-boot",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "java.compile.nullAnalysis.mode": "automatic",
+        "spring-boot.ls.problem.application-properties.enabled": true,
+        "files.eol": "\n"
+      }
+    }
+  }
+}
