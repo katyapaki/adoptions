@@ -6,9 +6,13 @@ This product includes material copied from the repository:
 
 Copied content includes:
   - contents of the `db/` folder
-  - contants of the `images/` folder
   - contents of `clean.md`
 
 The copied material is licensed under the Apache License, Version 2.0.
 A copy of the Apache 2.0 license is included in this distribution in licenses/apache-2.0.txt
 
+Repository-local modifications have been made in this fork, including:
+  - Codespaces/devcontainer configuration for GitHub Codespaces
+  - VS Code debugging configuration for Codespaces
+  - a repository README with local and Codespaces run instructions
+  - a rewritten `db/run.sh` for non-interactive PostgresML startup
