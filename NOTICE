@@ -7,6 +7,8 @@ This product includes material copied from the repository:
 Copied content includes:
   - contents of the `db/` folder
   - contents of `clean.md`
+  - contents of `src/resources/data.sql`
+  - contents of `src/resources/schema.sql`
 
 The copied material is licensed under the Apache License, Version 2.0.
 A copy of the Apache 2.0 license is included in this distribution in licenses/apache-2.0.txt
