@@ -1,6 +1,6 @@
 # Adoptions
 
-A Spring Boot 4 + Spring AI sample application that uses Anthropic and PostgresML to power a dog adoption assistant.
+A Spring Boot 3.4 + Spring AI sample application that uses Anthropic and PostgresML to power a dog adoption assistant.
 
 ## Requirements
 
