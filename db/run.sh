@@ -31,19 +31,19 @@ fi
 
 echo "Waiting for PostgresML to accept connections on port $HOST_DB_PORT..."
 for _ in $(seq 1 60); do
-  if docker exec "$CONTAINER_NAME" pg_isready -U postgresml -d postgresml >/dev/null 2>&1; then
+  if docker exec -u postgresml "$CONTAINER_NAME" pg_isready -U postgresml -d postgresml >/dev/null 2>&1; then
     break
   fi
   sleep 2
 done
 
-if ! docker exec "$CONTAINER_NAME" pg_isready -U postgresml -d postgresml >/dev/null 2>&1; then
+if ! docker exec -u postgresml "$CONTAINER_NAME" pg_isready -U postgresml -d postgresml >/dev/null 2>&1; then
   echo "PostgresML did not become ready in time."
   exit 1
 fi
 
 echo "Ensuring application role exists..."
-cat "$(dirname "$0")/users.sql" | docker exec -i "$CONTAINER_NAME" psql -v ON_ERROR_STOP=1 -U postgresml -d postgresml >/dev/null
+cat "$(dirname "$0")/users.sql" | docker exec -i -u postgresml "$CONTAINER_NAME" psql -v ON_ERROR_STOP=1 -U postgresml -d postgresml >/dev/null
 
 echo
 echo "PostgresML is ready."
