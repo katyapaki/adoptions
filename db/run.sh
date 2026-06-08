@@ -6,27 +6,35 @@ IMAGE_NAME="ghcr.io/postgresml/postgresml:2.9.3"
 VOLUME_NAME="adoptions-postgresml-data"
 HOST_DB_PORT="${HOST_DB_PORT:-5433}"
 HOST_HTTP_PORT="${HOST_HTTP_PORT:-8000}"
+KEEPALIVE_CMD='["sleep","infinity"]'
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "docker is required"
   exit 1
 fi
 
+if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
+  EXISTING_CMD="$(docker inspect --format '{{json .Config.Cmd}}' "$CONTAINER_NAME")"
+  if [[ "$EXISTING_CMD" != "$KEEPALIVE_CMD" ]]; then
+    echo "Recreating '$CONTAINER_NAME' with persistent command..."
+    docker rm -f "$CONTAINER_NAME" >/dev/null
+  fi
+fi
+
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
   echo "Container '$CONTAINER_NAME' is already running."
+elif docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
+  echo "Starting existing container '$CONTAINER_NAME'..."
+  docker start "$CONTAINER_NAME" >/dev/null
 else
-  if docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
-    echo "Starting existing container '$CONTAINER_NAME'..."
-    docker start "$CONTAINER_NAME" >/dev/null
-  else
-    echo "Creating and starting '$CONTAINER_NAME' from $IMAGE_NAME..."
-    docker run -d \
-      --name "$CONTAINER_NAME" \
-      -v "$VOLUME_NAME":/var/lib/postgresql \
-      -p "$HOST_DB_PORT":5432 \
-      -p "$HOST_HTTP_PORT":8000 \
-      "$IMAGE_NAME" >/dev/null
-  fi
+  echo "Creating and starting '$CONTAINER_NAME' from $IMAGE_NAME..."
+  docker run -d \
+    --name "$CONTAINER_NAME" \
+    --restart unless-stopped \
+    -v "$VOLUME_NAME":/var/lib/postgresql \
+    -p "$HOST_DB_PORT":5432 \
+    -p "$HOST_HTTP_PORT":8000 \
+    "$IMAGE_NAME" sleep infinity >/dev/null
 fi
 
 echo "Waiting for PostgresML to accept connections on port $HOST_DB_PORT..."
