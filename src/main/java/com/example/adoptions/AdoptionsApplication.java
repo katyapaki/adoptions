@@ -31,62 +31,75 @@ import java.util.List;
 @SpringBootApplication
 public class AdoptionsApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AdoptionsApplication.class, args);
-	}
+        public static void main(String[] args) {
+                SpringApplication.run(AdoptionsApplication.class, args);
+        }
 
-    @Bean
-    PromptChatMemoryAdvisor promptChatMemoryAdvisor(DataSource dataSource) {
-        var jdbc = JdbcChatMemoryRepository
-                .builder()
-                .dataSource(dataSource)
-                .build();
+        @Bean
+        PromptChatMemoryAdvisor promptChatMemoryAdvisor(DataSource dataSource) {
+                var jdbc = JdbcChatMemoryRepository
+                                .builder()
+                                .dataSource(dataSource)
+                                .build();
 
-        var chatMessageWindow = MessageWindowChatMemory
-                .builder()
-                .chatMemoryRepository(jdbc)
-                .build();
+                var chatMessageWindow = MessageWindowChatMemory
+                                .builder()
+                                .chatMemoryRepository(jdbc)
+                                .build();
 
-        return PromptChatMemoryAdvisor
-                .builder(chatMessageWindow)
-                .build();
-    }
+                return PromptChatMemoryAdvisor
+                                .builder(chatMessageWindow)
+                                .build();
+        }
 
 }
-
 
 interface DogRepository extends ListCrudRepository<Dog, Integer> {
 }
 
-record Dog(@Id int id, String name, String owner, String description ){
+record Dog(@Id int id, String name, String owner, String description) {
 }
-
-
 
 @Controller
 @ResponseBody
 class AdoptionsController {
 
-    private final ChatClient ai;
+        private final ChatClient ai;
 
-    AdoptionsController (PromptChatMemoryAdvisor promptChatMemoryAdvisor,
-                         ChatClient.Builder ai  ) {
-        var system = """
-                You are an AI powered assistant to help people adopt a dog from the adoption agency named Pooch Palace with locations in Rio de Janeiro, Mexico City, Seoul, Tokyo, Singapore, New York City, Amsterdam, Paris, Mumbai, New Delhi, Barcelona, London, and San Francisco. Information about the dogs available will be presented below. If there is no information, then return a polite response suggesting we don't have any dogs available.
-                """;
-        this.ai = ai
-                .defaultSystem(system)
-                .defaultAdvisors(promptChatMemoryAdvisor)
-                .build();
-    }
+        AdoptionsController(JdbcClient db,
+                        PromptChatMemoryAdvisor promptChatMemoryAdvisor,
+                        ChatClient.Builder ai,
+                        DogRepository repository,
+                        VectorStore vectorStore) {
 
-    @GetMapping("/{user}/assistant")
-    String inquire(@PathVariable String user, @RequestParam String question) {
-        return ai
-                .prompt()
-                .user(question)
-                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, user))
-                .call()
-                .content();
-    }
+                var count = db
+                                .sql("select count(*) from vector_store")
+                                .query(Integer.class)
+                                .single();
+                if (count == 0) {
+                        repository.findAll().forEach(dog -> {
+                                var dogument = new Document("id: %s, name: %s, description: %s".formatted(
+                                                dog.id(), dog.name(), dog.description()));
+                                vectorStore.add(List.of(dogument));
+                        });
+                }
+                var system = """
+                                You are an AI powered assistant to help people adopt a dog from the adoption agency named Pooch Palace with locations in Rio de Janeiro, Mexico City, Seoul, Tokyo, Singapore, New York City, Amsterdam, Paris, Mumbai, New Delhi, Barcelona, London, and San Francisco. Information about the dogs available will be presented below. If there is no information, then return a polite response suggesting we don't have any dogs available.
+                                """;
+                this.ai = ai
+                                .defaultSystem(system)
+                                .defaultAdvisors(promptChatMemoryAdvisor, 
+                                        new QuestionAnswerAdvisor(vectorStore))
+                                .build();
+        }
+
+        @GetMapping("/{user}/assistant")
+        String inquire(@PathVariable String user, @RequestParam String question) {
+                return ai
+                                .prompt()
+                                .user(question)
+                                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, user))
+                                .call()
+                                .content();
+        }
 }
