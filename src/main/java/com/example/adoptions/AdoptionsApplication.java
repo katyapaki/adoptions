@@ -60,6 +60,9 @@ interface DogRepository extends ListCrudRepository<Dog, Integer> {
 record Dog(@Id int id, String name, String owner, String description) {
 }
 
+record DogAdoptionSuggestion(int id, String name, String description) {
+}
+
 @Controller
 @ResponseBody
 class AdoptionsController {
@@ -88,18 +91,18 @@ class AdoptionsController {
                                 """;
                 this.ai = ai
                                 .defaultSystem(system)
-                                .defaultAdvisors(promptChatMemoryAdvisor, 
-                                        new QuestionAnswerAdvisor(vectorStore))
+                                .defaultAdvisors(promptChatMemoryAdvisor,
+                                                new QuestionAnswerAdvisor(vectorStore))
                                 .build();
         }
 
         @GetMapping("/{user}/assistant")
-        String inquire(@PathVariable String user, @RequestParam String question) {
+        DogAdoptionSuggestion inquire(@PathVariable String user, @RequestParam String question) {
                 return ai
                                 .prompt()
                                 .user(question)
                                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, user))
                                 .call()
-                                .content();
+                                .entity(DogAdoptionSuggestion.class);
         }
 }
