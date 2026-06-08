@@ -52,7 +52,7 @@ When the Codespace is created:
 Create or edit:
 
 ```bash
-.devcontainer/.env
+.env
 ```
 
 Add:
@@ -61,7 +61,7 @@ Add:
 ANTHROPIC_API_KEY=your_key_here
 ```
 
-If `.devcontainer/.env` does not exist yet, it will be copied automatically from `.devcontainer/.env.example`.
+If `.env` does not exist yet, it will be copied automatically from `.env.example`.
 
 ### Run the app in Codespaces
 
@@ -79,7 +79,7 @@ Open **Run and Debug** and start:
 
 - `Debug AdoptionsApplication`
 
-That launch configuration runs `com.example.demo.AdoptionsApplication` and loads environment variables from `.devcontainer/.env`.
+That launch configuration runs `com.example.demo.AdoptionsApplication` and should load environment variables from `.env`.
 
 ### Forwarded ports
 
