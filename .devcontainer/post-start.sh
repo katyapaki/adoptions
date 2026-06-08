@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "docker CLI not found; skipping database startup"
+  exit 0
+fi
+
+if ! docker info >/dev/null 2>&1; then
+  echo "docker daemon not ready; skipping database startup"
+  exit 0
+fi
+
+./db/run.sh

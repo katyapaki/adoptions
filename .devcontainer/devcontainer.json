@@ -1,6 +1,9 @@
 {
   "name": "Java 21 + PostgreSQLML",
-  "image": "mcr.microsoft.com/devcontainers/java:1-21-bookworm",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
