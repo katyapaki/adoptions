@@ -69,8 +69,11 @@ class AdoptionsController {
 
     private final ChatClient ai;
 
-    AdoptionsController (ChatClient.Builder ai  ) {
-        this.ai = ai.build();
+    AdoptionsController (PromptChatMemoryAdvisor promptChatMemoryAdvisor,
+                         ChatClient.Builder ai  ) {
+        this.ai = ai
+                .defaultAdvisors(promptChatMemoryAdvisor)
+                .build();
     }
 
     @GetMapping("/{user}/assistant")
@@ -78,6 +81,7 @@ class AdoptionsController {
         return ai
                 .prompt()
                 .user(question)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, user))
                 .call()
                 .content();
     }
