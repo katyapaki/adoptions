@@ -12,6 +12,7 @@ import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryReposito
 import org.springframework.ai.document.Document;
 import org.springframework.ai.mcp.SyncMcpToolCallback;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
+import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +28,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.sql.DataSource;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @SpringBootApplication
@@ -63,6 +68,20 @@ record Dog(@Id int id, String name, String owner, String description) {
 record DogAdoptionSuggestion(int id, String name, String description) {
 }
 
+@Component
+class DogAdoptionScheduler {
+
+    @Tool(description = "schedule an appointment to pickup or adopt a " +
+            "dog from a Pooch Palace location")
+    String schedule(int dogId, String dogName) {
+        System.out.println("Scheduling adoption for dog " + dogName);
+        return Instant
+                .now()
+                .plus(3, ChronoUnit.DAYS)
+                .toString();
+    }
+}
+
 @Controller
 @ResponseBody
 class AdoptionsController {
@@ -70,6 +89,7 @@ class AdoptionsController {
         private final ChatClient ai;
 
         AdoptionsController(JdbcClient db,
+                        DogAdoptionScheduler scheduler,
                         PromptChatMemoryAdvisor promptChatMemoryAdvisor,
                         ChatClient.Builder ai,
                         DogRepository repository,
@@ -90,6 +110,7 @@ class AdoptionsController {
                                 You are an AI powered assistant to help people adopt a dog from the adoption agency named Pooch Palace with locations in Rio de Janeiro, Mexico City, Seoul, Tokyo, Singapore, New York City, Amsterdam, Paris, Mumbai, New Delhi, Barcelona, London, and San Francisco. Information about the dogs available will be presented below. If there is no information, then return a polite response suggesting we don't have any dogs available.
                                 """;
                 this.ai = ai
+                                .defaultTools(scheduler)
                                 .defaultSystem(system)
                                 .defaultAdvisors(promptChatMemoryAdvisor,
                                                 new QuestionAnswerAdvisor(vectorStore))
@@ -106,3 +127,4 @@ class AdoptionsController {
                                 .entity(DogAdoptionSuggestion.class);
         }
 }
+
