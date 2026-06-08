@@ -59,7 +59,10 @@ Add:
 
 ```dotenv
 ANTHROPIC_API_KEY=your_key_here
+ANTHROPIC_MODEL=claude-3-7-sonnet-20250219
 ```
+
+If your Anthropic account does not have access to that model, set `ANTHROPIC_MODEL` to one your account can use.
 
 If `.env` does not exist yet, it will be copied automatically from `.env.example`.
 
