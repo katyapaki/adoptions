@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT_DIR"
+cd "$ROOT_DIR/adoptions"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "docker CLI not found; skipping database startup"

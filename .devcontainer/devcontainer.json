@@ -1,5 +1,5 @@
 {
-  "name": "Java 21 + PostgreSQLML",
+  "name": "Java 25 + PostgreSQLML",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."
@@ -21,7 +21,6 @@
       "label": "PostgresML HTTP"
     }
   },
-  "postCreateCommand": "chmod +x mvnw db/*.sh .devcontainer/*.sh && .devcontainer/post-create.sh",
   "postStartCommand": ".devcontainer/post-start.sh",
   "customizations": {
     "vscode": {

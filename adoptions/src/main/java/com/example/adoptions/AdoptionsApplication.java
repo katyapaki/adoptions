@@ -57,6 +57,14 @@ public class AdoptionsApplication {
                                 .build();
         }
 
+        @Bean
+        McpSyncClient mcpSyncClient() {
+                var mcp = McpClient
+                        .sync(HttpClientSseClientTransport.builder("http://localhost:8081").build()).build();
+                mcp.initialize();
+                return mcp;
+        }
+
 }
 
 interface DogRepository extends ListCrudRepository<Dog, Integer> {
@@ -89,7 +97,7 @@ class AdoptionsController {
         private final ChatClient ai;
 
         AdoptionsController(JdbcClient db,
-                        DogAdoptionScheduler scheduler,
+                        McpSyncClient mcpSyncClient,
                         PromptChatMemoryAdvisor promptChatMemoryAdvisor,
                         ChatClient.Builder ai,
                         DogRepository repository,
@@ -110,7 +118,7 @@ class AdoptionsController {
                                 You are an AI powered assistant to help people adopt a dog from the adoption agency named Pooch Palace with locations in Rio de Janeiro, Mexico City, Seoul, Tokyo, Singapore, New York City, Amsterdam, Paris, Mumbai, New Delhi, Barcelona, London, and San Francisco. Information about the dogs available will be presented below. If there is no information, then return a polite response suggesting we don't have any dogs available.
                                 """;
                 this.ai = ai
-                                .defaultTools(scheduler)
+                                .defaultToolCallbacks(new SyncMcpToolCallbackProvider(mcpSyncClient))
                                 .defaultSystem(system)
                                 .defaultAdvisors(promptChatMemoryAdvisor,
                                                 new QuestionAnswerAdvisor(vectorStore))
