@@ -6,6 +6,7 @@ This product includes material copied from the repository:
 
 Copied content includes:
   - contents of the `db/` folder
+  - contents of the `images/` folder
   - contents of `clean.md`
   - contents of `src/resources/data.sql`
   - contents of `src/resources/schema.sql`
